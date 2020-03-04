@@ -1,59 +1,157 @@
-## loServer
-
-Q&A 见：http://wiki.yqxiu.cn/pages/viewpage.action?pageId=13697069
-
-基于Netty的Http应用服务器
-
-### 介绍
-自己实现一个Http应用服务器来处理简单的Get和Post请求（就是请求文本，响应的也是文本或json），了解了下Http协议，发现解析起来写的东西很多，而且自己写性能也是大问题（性能这个问题为未来考虑），于是考虑用Netty，发现它有Http相关的实现，便按照Example的指示，自己实现了一个应用服务器。思想很简单，在ServerHandler中拦截请求，把Netty的Request对象转换成我自己实现的Request对象，经过用户的Action对象后，生成自己的Response，最后转换为Netty的Response返回给用户。
-
-这个项目中使用到的Netty版本是4.X，毕竟这个版本比较稳定，而且最近也在不停更新，于是采用了。之后如果有时间，会在项目中添加更多功能，希望它最终成为一个完善的高性能的Http服务器。
-
-### 代码逻辑
-字段说明：
-manual: 手动打点上报的日志，这种日志，不做判断全部接收。(之后会被rdt代替)
-rdt: report_data_type 日志上报类型.
-    100以内的数据，都是不用判断圈选配置，直接接收。
-    1.表示以前的manual字段内容，
-    2.  PC 搜索推荐链路追踪数据
-    21. iOS 表示PC搜索或推荐的样例被被点击后上报的element_click日志
-    22. Android 表示PC搜索或推荐的样例被被点击后上报的element_click日志
-    3. 前端加的元素上报标识，如果rdt为3就直接上报，不再需要后续的圈选
+###介绍
+这是一个基于Netty的高性能Http接口服务，目的是将接受到的日志经过简单处理后快速推送到kafka，在最普通的机器环境压测QPS最高可以达到2.5w/s
+项目地址：[https://github.com/yanchaoguo/log-server](https://github.com/yanchaoguo/log-server)
 
 
-ps aux | grep LogServer
-echo ""
-cd /data/work/log_server/classes
-ll
-echo ""
-rm -f com.tar
-ll
-echo ""
-mv com com.bak20190416001
-ll
-echo ""
-download com.tar
-ll
-echo ""
-tar -zxvf com.tar
-ll
-echo ""
-ps aux | grep LogServer
-ll
-echo ""
+###依赖
+* **Netty4**
+* **logback kafka appender**
+* **ipip**
 
-cd ..
-./stop-all.sh
-ps aux | grep LogServer
+###快速启动
+**1、编译**
+```
+git clone https://github.com/yanchaoguo/log-server.git
 
-./start-all.sh
-ps aux | grep LogServer
-tail -f logs/*.log
+mvn assembly:assembly
+```
+**2、配置**
+将编译好的工程放到 /data/work/log_server，目录结构如下：
+```
+----log_server
+          |
+          ----bin           #依赖的jar包
+          |
+          ----classes       #编译后生成的classes目录
+          |
+          ----bin           #启动脚本
+          |
+          ----logs          #日志文件  
+```
+cd /data/work/log_server/bin
+编辑 ls.sh 脚本，配置端口号和kafka地址
+```
+port=9001
+kafka=hadoop006:9092,hadoop007:9092,hadoop008:9092
+```
+**3、启动**
 
-10.0.2.229
-10.0.2.217
-10.0.2.94
-10.0.2.148
+```
+./ls.sh start
+```
 
-10.0.0.41  10.0.0.159  10.0.0.162
+###快速开发
+**1、目录说明**
+![image.png](https://upload-images.jianshu.io/upload_images/17243194-bf9251c1b28ee3e7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
+
+**2、在action目录下新增业务处理类，比如创建FastPushAction并实现Action接口的doAction方法；该类不对日志进行处理，没有太多业务逻辑，负责将接收到的日志发送到kafka ，可以作为demo参考，具体实现如下**
+```
+/**
+ * /fast_push为该业务逻辑的请求路径 ，如http://localhost:port/log-server/fast_push
+ */
+@Route(value = "/fast_push")
+public class FastPushAction implements Action {
+
+    private static final Logger logger = LoggerFactory.getLogger(PushLogAction.class);
+
+
+    @Override
+    public void doAction(Request request, Response response) {
+
+            String logs = request.getContent();  //从body中获取日志内容
+            //从参数中获取 logger 名称，为空则取默认值
+            String loger = Utils.isNulDefault(request.getParam("loger"),LogConfigManager.trashTopic);
+
+            int responseStatus = CodeManager.RESPONSE_CODE_NORMAL;
+
+            //如果body中没有内容 尝试从url参数中获取
+            if (StrUtil.isEmpty(logs) && request.getParams().size()>0) {
+                logs = Utils.toJson(request.getParams());
+            }
+            if (StrUtil.isEmpty(logs)) {
+                response.setContent("<h2>not find log content</h2>");
+                responseStatus = CodeManager.RESPONSE_CODE_NOT_CONTENT;
+                logger.warn("not find log content");
+            }else {
+                //将日志推送到kafka，其中 logger 的名称要和logback.xml中的配置一致
+                KafkaLoggerFactory.getLogger(loger).info(logs);
+            }
+            // 设置返回信息：
+            response.setStatus(responseStatus);
+            response.setHeader("Access-Control-Allow-Origin", "*");
+            response.setHeader(CookieHeaderNames.EXPIRES , -1);
+            // 返回：
+            response.send();
+
+    }
+
+}
+
+```
+**3、配置logback.xml**
+```
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration>
+    <!--trash-->
+    <logger name="trash" level="INFO" additivity="false">
+        <appender-ref ref="trash_kafka"/>
+    </logger>
+
+
+  <appender name="trash_kafka" class="com.github.danielwegener.logback.kafka.KafkaAppender">
+        <encoder class="com.github.danielwegener.logback.kafka.encoding.LayoutKafkaMessageEncoder">
+            <layout class="ch.qos.logback.classic.PatternLayout">
+                <pattern>%msg</pattern>
+            </layout>
+            <charset>UTF-8</charset>
+        </encoder>
+        <topic>trash</topic>
+        <keyingStrategy class="com.github.danielwegener.logback.kafka.keying.RoundRobinKeyingStrategy" />
+        <deliveryStrategy class="com.github.danielwegener.logback.kafka.delivery.AsynchronousDeliveryStrategy" />
+    	<producerConfig>bootstrap.servers=${kafka.servers}
+        </producerConfig>
+        <producerConfig>linger.ms=1000</producerConfig>
+        <producerConfig>compression.type=none</producerConfig>
+        <producerConfig>buffer.memory=1073741842</producerConfig>
+        <producerConfig>acks=1</producerConfig>
+   </appender>
+</configuration>
+
+```
+
+**4、在 LogServer.java 中注册FastPushAction**
+```
+ public static void start() {
+        //注册action
+        ServerSetting.setAction(PushLogAction.class);
+        ServerSetting.setAction(FastPushAction.class);
+        try {
+            new LogServer().start(ServerSetting.getPort());
+        } catch (InterruptedException e) {
+            log.error("LoServer start error!", e);
+        }
+    }
+```
+
+###性能
+**4核2G单实例**
+数据大小2k，压测命令如下：
+```
+ab -n2000000 -c500  "http://****:9001/log-server/fast_push?debugMode=0&sdk=tracker-view.js&ver=1.1.1&d_i=2020021955e4d920&url=https%3A%2F%2Fb.scene.eprezi.cn%2Fs%2FDPawp3qi%3Fshare_level%3D10%26from_user%3D20200211285b0f8f%26from_id%3Db9509c4e-7%26share_time%3D1581400182382%26from%3Dsinglemessage%26isappinstalled%3D0%26adpop%3D1&tit=%E6%B5%B7%E8%89%BA-%E5%8C%97%E4%BA%AC%E8%88%9E%E8%B9%88%E5%AD%A6%E9%99%A2%E4%B8%AD%E5%9B%BD%E8%88%9E%E8%80%83%E7%BA%A7%E6%95%99%E6%9D%90&ref=&u_a=&bro=%E5%BE%AE%E4%BF%A1&os=Android&o_v=8.1.0&eng=Webkit&man=Xiaomi&mod=HM-6&sns=weixin-singlemessage&n_t=wifi&s_i=v3x20200219eb3eadcb&c_i=da1c0dd6ad3b19b9a86f42bdfd31c69a&u_i=&c_p=Android&b_v=2.0&c_e=0.0.1&product=traffic_view&b_t=traffic&x_t=0&wx_o_i=&wx_n_n=&wx_sex=&wx_pro=&wx_cit=&wx_cou=&wx_hea=&wx_u_i=&wx_r_f=singlemessage&scene_id=121973512&scene_c_u=ff80808155520087015556e924cc0e8e&scene_code=DPawp3qi&scene_bizType=0&scene_property_eqAdType=1&scene_ext_yqc_ad=121973512&scene_member_type=&scene_user_type=1&foto_id=&foto_code=&rdt=1&domain=b.scene.eprezi.cn&media_id=1&pid=10000&works_id=121973512&earnings_user_id=ff80808155520087015556e924cc0e8e&publisher_id=24996&ad_unit_id=12&plan_id=201904091007&strategy_id=515&task_id=5156899&ad_platform=gdt&ad_type=tpl&ad_style_id=43&ad_size=&works_open_type=1&ad_page_num=0&man_2=%E5%B0%8F%E7%B1%B3&cou=&pro=&cit=&sex=0&new_user=&is_auth=0&device_size=36&d_t=1&e_t=element_view&count=1&scene_page_curr=&target_url=&conversion_type=ad_position_request&c_t=1582102328147"
+```
+
+压测结果：
+```
+Concurrency Level:      500
+Time taken for tests:   83.936 seconds
+Complete requests:      2000000
+Failed requests:        0
+Write errors:           0
+Total transferred:      272000000 bytes
+HTML transferred:       0 bytes
+Requests per second:    23827.75 [#/sec] (mean)
+Time per request:       20.984 [ms] (mean)
+
+```
+![image.png](https://upload-images.jianshu.io/upload_images/17243194-651dd1f668fce966.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
