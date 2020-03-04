@@ -1,14 +1,14 @@
-###介绍
+### 介绍
 这是一个基于Netty的高性能Http接口服务，目的是将接受到的日志经过简单处理后快速推送到kafka，在最普通的机器环境压测QPS最高可以达到2.5w/s
 项目地址：[https://github.com/yanchaoguo/log-server](https://github.com/yanchaoguo/log-server)
 
 
-###依赖
+### 依赖
 * **Netty4**
 * **logback kafka appender**
 * **ipip**
 
-###快速启动
+### 快速启动
 **1、编译**
 ```
 git clone https://github.com/yanchaoguo/log-server.git
@@ -40,9 +40,9 @@ kafka=hadoop006:9092,hadoop007:9092,hadoop008:9092
 ./ls.sh start
 ```
 
-###快速开发
+### 快速开发
 **1、目录说明**
-![image.png](https://upload-images.jianshu.io/upload_images/17243194-bf9251c1b28ee3e7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![ ](https://github.com/yanchaoguo/log-server/blob/master/img/a.png)
 
 
 **2、在action目录下新增业务处理类，比如创建FastPushAction并实现Action接口的doAction方法；该类不对日志进行处理，没有太多业务逻辑，负责将接收到的日志发送到kafka ，可以作为demo参考，具体实现如下**
@@ -134,7 +134,7 @@ public class FastPushAction implements Action {
     }
 ```
 
-###性能
+### 性能
 **4核2G单实例**
 数据大小2k，压测命令如下：
 ```
@@ -154,4 +154,5 @@ Requests per second:    23827.75 [#/sec] (mean)
 Time per request:       20.984 [ms] (mean)
 
 ```
-![image.png](https://upload-images.jianshu.io/upload_images/17243194-651dd1f668fce966.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+ 
+![ ](https://github.com/yanchaoguo/log-server/blob/master/img/b.png)
