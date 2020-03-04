@@ -21,12 +21,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * LoServer starter<br>
+ * LogServer starter<br>
  * 用于启动服务器的主对象<br>
- * 使用LoServer.start()启动服务器<br>
+ * 使用LogServer.start()启动服务器<br>
  * 服务的Action类和端口等设置在ServerSetting中设置
  *
- * @author Looly
+ * @gyc
  */
 public class LogServer {
     //	private static final Log log = StaticLog.get();
