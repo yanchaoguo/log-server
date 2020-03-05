@@ -1,7 +1,10 @@
 ### 介绍
-这是一个基于Netty的高性能Http接口服务，目的是将接受到的日志经过简单处理后快速推送到kafka，在最普通的机器环境压测QPS最高可以达到2.5w/s
-项目地址：[https://github.com/yanchaoguo/log-server](https://github.com/yanchaoguo/log-server)
+这是一个基于Netty框架二次封装的高性能Http接口服务，增加了对http请求路由的功能，并简化了操作，目的是将接收到的日志经过简单处理后快速推送到kafka ，服务于易企秀数据埋点业务，春节期间日处理10亿+
+特点：简单、高效 （在最普通的机器环境压测QPS最高可以达到2.5w/s）
+博客地址：[https://www.jianshu.com/p/3e049008204e](https://www.jianshu.com/p/3e049008204e)
 
+### 设计
+![ ](https://github.com/yanchaoguo/log-server/blob/master/img/c.png)
 
 ### 依赖
 * **Netty4**
