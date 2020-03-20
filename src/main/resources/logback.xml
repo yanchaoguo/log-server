@@ -25,112 +25,31 @@
             <pattern>[%level][%d{yyyy-MM-dd} %d{HH:mm:ss:SSS}][%X{ip}][%X{app}][%thread][%logger{40}][%line]- %msg%n</pattern>
         </encoder>
     </appender>
+ 
 
-    <appender name="tracker_kafka" class="com.github.danielwegener.logback.kafka.KafkaAppender">
-        <encoder class="com.github.danielwegener.logback.kafka.encoding.PatternLayoutKafkaMessageEncoder">
+
+  <appender name="trash_kafka" class="com.github.danielwegener.logback.kafka.KafkaAppender">
+        <encoder class="com.github.danielwegener.logback.kafka.encoding.LayoutKafkaMessageEncoder">
             <layout class="ch.qos.logback.classic.PatternLayout">
                 <pattern>%msg</pattern>
             </layout>
             <charset>UTF-8</charset>
-            <immediateFlush>true</immediateFlush>
-        </encoder>
-        <topic>tracker</topic>
-        <keyingStrategy class="com.github.danielwegener.logback.kafka.keying.RoundRobinKeyingStrategy"/>
-        <deliveryStrategy class="com.github.danielwegener.logback.kafka.delivery.AsynchronousDeliveryStrategy"/>
-        <producerConfig>bootstrap.servers=${kafka.servers}
-        </producerConfig>
-        <producerConfig>compression.codec=snappy</producerConfig>
-    </appender>
-
-    <appender name="tracker_view_kafka" class="com.github.danielwegener.logback.kafka.KafkaAppender">
-        <encoder class="com.github.danielwegener.logback.kafka.encoding.PatternLayoutKafkaMessageEncoder">
-            <layout class="ch.qos.logback.classic.PatternLayout">
-                <pattern>%msg</pattern>
-            </layout>
-            <charset>UTF-8</charset>
-            <immediateFlush>true</immediateFlush>
-        </encoder>
-        <topic>tracker_view</topic>
-        <keyingStrategy class="com.github.danielwegener.logback.kafka.keying.RoundRobinKeyingStrategy"/>
-        <deliveryStrategy class="com.github.danielwegener.logback.kafka.delivery.AsynchronousDeliveryStrategy"/>
-        <producerConfig>bootstrap.servers=${kafka.servers}
-        </producerConfig>
-        <producerConfig>compression.codec=snappy</producerConfig>
-    </appender>
-
-
-    <!--长页面产品：ls-->
-    <appender name="ls_kafka" class="com.github.danielwegener.logback.kafka.KafkaAppender">
-        <encoder class="com.github.danielwegener.logback.kafka.encoding.PatternLayoutKafkaMessageEncoder">
-            <layout class="ch.qos.logback.classic.PatternLayout">
-                <pattern>%msg</pattern>
-            </layout>
-            <charset>UTF-8</charset>
-            <immediateFlush>true</immediateFlush>
-        </encoder>
-        <topic>ls</topic>
-        <keyingStrategy class="com.github.danielwegener.logback.kafka.keying.RoundRobinKeyingStrategy"/>
-        <deliveryStrategy class="com.github.danielwegener.logback.kafka.delivery.AsynchronousDeliveryStrategy"/>
-        <producerConfig>bootstrap.servers=${kafka.servers}
-        </producerConfig>
-        <producerConfig>compression.codec=snappy</producerConfig>
-    </appender>
-
-
-    <!--视频产品：video-->
-    <appender name="video_kafka" class="com.github.danielwegener.logback.kafka.KafkaAppender">
-        <encoder class="com.github.danielwegener.logback.kafka.encoding.PatternLayoutKafkaMessageEncoder">
-            <layout class="ch.qos.logback.classic.PatternLayout">
-                <pattern>%msg</pattern>
-            </layout>
-            <charset>UTF-8</charset>
-            <immediateFlush>true</immediateFlush>
-        </encoder>
-        <topic>video</topic>
-        <keyingStrategy class="com.github.danielwegener.logback.kafka.keying.RoundRobinKeyingStrategy"/>
-        <deliveryStrategy class="com.github.danielwegener.logback.kafka.delivery.AsynchronousDeliveryStrategy"/>
-        <producerConfig>bootstrap.servers=${kafka.servers}
-        </producerConfig>
-        <producerConfig>compression.codec=snappy</producerConfig>
-    </appender>
-
-    <!--event-->
-    <appender name="event_kafka" class="com.github.danielwegener.logback.kafka.KafkaAppender">
-        <encoder class="com.github.danielwegener.logback.kafka.encoding.PatternLayoutKafkaMessageEncoder">
-            <layout class="ch.qos.logback.classic.PatternLayout">
-                <pattern>%msg</pattern>
-            </layout>
-            <charset>UTF-8</charset>
-            <immediateFlush>true</immediateFlush>
-        </encoder>
-        <topic>event</topic>
-        <keyingStrategy class="com.github.danielwegener.logback.kafka.keying.RoundRobinKeyingStrategy"/>
-        <deliveryStrategy class="com.github.danielwegener.logback.kafka.delivery.AsynchronousDeliveryStrategy"/>
-        <producerConfig>bootstrap.servers=${kafka.servers}
-        </producerConfig>
-        <producerConfig>compression.codec=snappy</producerConfig>
-    </appender>
-
-    <!--trash-->
-    <appender name="trash_kafka" class="com.github.danielwegener.logback.kafka.KafkaAppender">
-        <encoder class="com.github.danielwegener.logback.kafka.encoding.PatternLayoutKafkaMessageEncoder">
-            <layout class="ch.qos.logback.classic.PatternLayout">
-                <pattern>%msg</pattern>
-            </layout>
-            <charset>UTF-8</charset>
-            <immediateFlush>true</immediateFlush>
         </encoder>
         <topic>trash</topic>
-        <keyingStrategy class="com.github.danielwegener.logback.kafka.keying.RoundRobinKeyingStrategy"/>
-        <deliveryStrategy class="com.github.danielwegener.logback.kafka.delivery.AsynchronousDeliveryStrategy"/>
-        <producerConfig>bootstrap.servers=${kafka.servers}
+        <keyingStrategy class="com.github.danielwegener.logback.kafka.keying.RoundRobinKeyingStrategy" />
+        <deliveryStrategy class="com.github.danielwegener.logback.kafka.delivery.AsynchronousDeliveryStrategy" />
+    	<producerConfig>bootstrap.servers=${kafka.servers}
         </producerConfig>
-        <producerConfig>compression.codec=snappy</producerConfig>
-    </appender>
+        <producerConfig>linger.ms=1000</producerConfig>
+        <producerConfig>compression.type=none</producerConfig>
+        <producerConfig>buffer.memory=1073741842</producerConfig>
+        <producerConfig>acks=1</producerConfig>
+   </appender>
+    
 
 
     <!--small-->
-    <appender name="small_kafka" class="com.github.danielwegener.logback.kafka.KafkaAppender">
+    <appender name="test_kafka" class="com.github.danielwegener.logback.kafka.KafkaAppender">
         <encoder class="com.github.danielwegener.logback.kafka.encoding.PatternLayoutKafkaMessageEncoder">
             <layout class="ch.qos.logback.classic.PatternLayout">
                 <pattern>%msg</pattern>
@@ -142,8 +61,7 @@
         <keyingStrategy class="com.github.danielwegener.logback.kafka.keying.RoundRobinKeyingStrategy"/>
         <deliveryStrategy class="com.github.danielwegener.logback.kafka.delivery.AsynchronousDeliveryStrategy"/>
         <producerConfig>bootstrap.servers=${kafka.servers}
-        </producerConfig>
-        <producerConfig>compression.codec=snappy</producerConfig>
+        </producerConfig> 
     </appender>
 
 
@@ -156,47 +74,16 @@
     <root level="INFO">
         <appender-ref ref="main"/>
     </root>
-    <logger name="tracker" level="INFO" additivity="false">
-        <!--<appender-ref ref="console"/>-->
-        <appender-ref ref="action"/>
-        <appender-ref ref="tracker_kafka"/>
-    </logger>
-    <logger name="tracker_view" level="INFO" additivity="false">
-        <!--<appender-ref ref="console"/>-->
-        <appender-ref ref="action"/>
-        <appender-ref ref="tracker_view_kafka"/>
-    </logger>
-
-    <!--长页面产品：ls-->
-    <logger name="ls" level="INFO" additivity="false">
-        <appender-ref ref="console"/>
-        <appender-ref ref="action"/>
-        <appender-ref ref="ls_kafka"/>
-    </logger>
-
-    <!--视频产品：video-->
-    <logger name="video" level="INFO" additivity="false">
-        <appender-ref ref="console"/>
-        <appender-ref ref="action"/>
-        <appender-ref ref="video_kafka"/>
-    </logger>
-
-    <!--event-->
-    <logger name="event" level="INFO" additivity="false">
-        <!--<appender-ref ref="console"/>-->
-        <appender-ref ref="action"/>
-        <appender-ref ref="event_kafka"/>
-    </logger>
-
-    <!--trash-->
+    
     <logger name="trash" level="INFO" additivity="false">
-        <appender-ref ref="action"/>
+        <!--<appender-ref ref="console"/>-->
+         
         <appender-ref ref="trash_kafka"/>
     </logger>
 
-    <!--trash-->
-    <logger name="small" level="INFO" additivity="false">
+    
+    <logger name="test" level="INFO" additivity="false">
         <appender-ref ref="action"/>
-        <appender-ref ref="small_kafka"/>
+        <appender-ref ref="test_kafka"/>
     </logger>
 </configuration>
