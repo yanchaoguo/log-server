@@ -1,7 +1,7 @@
 ### 介绍
  这是一个基于Netty框架二次封装的高性能Http接口服务，增加了对http请求路由的功能，当初设计的初衷是将接收到的日志经过简单处理后快速推送到kafka ，服务于易企秀数据埋点业务，目前春节期间日处理10亿+ ；目前该项目已把业务剥离、并简化了操作，大家可放心使用。
  
- 特点：简单、高效 （在最普通的机器环境压测QPS最高可以达到2.5w/s）
+ 特点：简单、高效 （在最普通的机器环境压测QPS最高可以达到3w/s）
 
  博客地址：[https://www.jianshu.com/p/3e049008204e](https://www.jianshu.com/p/3e049008204e)
 
@@ -118,8 +118,7 @@ public class FastPushAction implements Action {
         </producerConfig>
         <producerConfig>linger.ms=1000</producerConfig>
         <producerConfig>compression.type=none</producerConfig>
-        <producerConfig>buffer.memory=1073741842</producerConfig>
-        <producerConfig>acks=1</producerConfig>
+        <producerConfig>acks=0</producerConfig>
    </appender>
 </configuration>
 
@@ -141,22 +140,24 @@ public class FastPushAction implements Action {
 
 ### 性能
 **4核2G单实例**
-数据大小2k，压测命令如下：
+数据大小1k，压测命令如下：
 ```
-ab -n2000000 -c500  "http://****:9001/log-server/fast_push?debugMode=0&sdk=tracker-view.js&ver=1.1.1&d_i=2020021955e4d920&url=https%3A%2F%2Fb.scene.eprezi.cn%2Fs%2FDPawp3qi%3Fshare_level%3D10%26from_user%3D20200211285b0f8f%26from_id%3Db9509c4e-7%26share_time%3D1581400182382%26from%3Dsinglemessage%26isappinstalled%3D0%26adpop%3D1&tit=%E6%B5%B7%E8%89%BA-%E5%8C%97%E4%BA%AC%E8%88%9E%E8%B9%88%E5%AD%A6%E9%99%A2%E4%B8%AD%E5%9B%BD%E8%88%9E%E8%80%83%E7%BA%A7%E6%95%99%E6%9D%90&ref=&u_a=&bro=%E5%BE%AE%E4%BF%A1&os=Android&o_v=8.1.0&eng=Webkit&man=Xiaomi&mod=HM-6&sns=weixin-singlemessage&n_t=wifi&s_i=v3x20200219eb3eadcb&c_i=da1c0dd6ad3b19b9a86f42bdfd31c69a&u_i=&c_p=Android&b_v=2.0&c_e=0.0.1&product=traffic_view&b_t=traffic&x_t=0&wx_o_i=&wx_n_n=&wx_sex=&wx_pro=&wx_cit=&wx_cou=&wx_hea=&wx_u_i=&wx_r_f=singlemessage&scene_id=121973512&scene_c_u=ff80808155520087015556e924cc0e8e&scene_code=DPawp3qi&scene_bizType=0&scene_property_eqAdType=1&scene_ext_yqc_ad=121973512&scene_member_type=&scene_user_type=1&foto_id=&foto_code=&rdt=1&domain=b.scene.eprezi.cn&media_id=1&pid=10000&works_id=121973512&earnings_user_id=ff80808155520087015556e924cc0e8e&publisher_id=24996&ad_unit_id=12&plan_id=201904091007&strategy_id=515&task_id=5156899&ad_platform=gdt&ad_type=tpl&ad_style_id=43&ad_size=&works_open_type=1&ad_page_num=0&man_2=%E5%B0%8F%E7%B1%B3&cou=&pro=&cit=&sex=0&new_user=&is_auth=0&device_size=36&d_t=1&e_t=element_view&count=1&scene_page_curr=&target_url=&conversion_type=ad_position_request&c_t=1582102328147"
+ab -n2000000 -c1000  "http://****:9001/log-server/fast_push?debugMode=0&sdk=tracker-view.js&ver=1.1.1&d_i=2020021955e4d920&url=https%3A%2F%2Fb.scene.eprezi.cn%2Fs%2FDPawp3qi%3Fshare_level%3D10%26from_user%3D20200211285b0f8f%26from_id%3Db9509c4e-7%26share_time%3D1581400182382%26from%3Dsinglemessage%26isappinstalled%3D0%26adpop%3D1&tit=%E6%B5%B7%E8%89%BA-%E5%8C%97%E4%BA%AC%E8%88%9E%E8%B9%88%E5%AD%A6%E9%99%A2%E4%B8%AD%E5%9B%BD%E8%88%9E%E8%80%83%E7%BA%A7%E6%95%99%E6%9D%90&ref=&u_a=&bro=%E5%BE%AE%E4%BF%A1&os=Android&o_v=8.1.0&eng=Webkit&man=Xiaomi&mod=HM-6&sns=weixin-singlemessage&n_t=wifi&s_i=v3x20200219eb3eadcb&c_i=da1c0dd6ad3b19b9a86f42bdfd31c69a&u_i=&c_p=Android&b_v=2.0&c_e=0.0.1&product=traffic_view"
 ```
 
-压测结果：
+压测结果 3w/s：
 ```
-Concurrency Level:      500
-Time taken for tests:   83.936 seconds
+Concurrency Level:      1000
+Time taken for tests:   66.556 seconds
 Complete requests:      2000000
 Failed requests:        0
 Write errors:           0
 Total transferred:      272000000 bytes
 HTML transferred:       0 bytes
-Requests per second:    23827.75 [#/sec] (mean)
-Time per request:       20.984 [ms] (mean)
+Requests per second:    30049.66 [#/sec] (mean)
+Time per request:       33.278 [ms] (mean)
+Time per request:       0.033 [ms] (mean, across all concurrent requests)
+Transfer rate:          3990.97 [Kbytes/sec] received
 
 ```
  
