@@ -43,7 +43,7 @@ public class LogServer {
 
         // Configure the server.
         EventLoopGroup bossGroup = new NioEventLoopGroup(2, new DefaultThreadFactory("s1",true));
-        EventLoopGroup workerGroup = new NioEventLoopGroup(4, new DefaultThreadFactory("s2",true));
+        EventLoopGroup workerGroup = new NioEventLoopGroup(0, new DefaultThreadFactory("s2",true));
         String runType = SysConfigManager.getProperty("server.type");
         if("n".equals(runType)){
             bossGroup = new NioEventLoopGroup(1);
