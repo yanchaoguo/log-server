@@ -33,8 +33,8 @@ public class ServerSetting {
 	/** 字符编码 */
 	private static String charset = DEFAULT_CHARSET;
 	/** 端口 */
-//	private static int port = SysConfigManager.getInteger("server.port");
-	private static int port = 8888;
+	private static int port = SysConfigManager.getInteger("server.port");
+//	private static int port = 8888;
 
 	/** Filter映射表 */
 	private static Map<String, Filter> filterMap;
