@@ -3,6 +3,7 @@
  
  特点：简单、高效 （在最普通的机器环境压测QPS最高可以达到3w/s）
 
+ **js-sdk**： [页面埋点项目](https://github.com/eqxiu/tracker-js-sdk)
  博客地址：[https://www.jianshu.com/p/3e049008204e](https://www.jianshu.com/p/3e049008204e)
 
 ### 设计
